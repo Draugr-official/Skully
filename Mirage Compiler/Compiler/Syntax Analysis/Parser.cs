@@ -1,4 +1,70 @@
-﻿using Mirage_Compiler.Compiler.Syntax_Analysis.AST.Expressions;
+﻿/*
+IMPLIMENTED:
+    Statements
+        * Block
+        * Namespace
+        * Class
+            TODO:
+                * Attributes
+        * Using
+        * Method
+            TODO:
+                * Lambda statement
+                * Out keyword
+        * Call
+       
+    Expressions
+        * Literal
+        
+TODO:
+    Statements
+        * If                : e.g 'if(condition) { ... }'
+        * WhileDo           : e.g 'while(condition) do { ... }'
+        * DoWhile           : e.g 'do { ... } while(condition)'
+        * For               : e.g 'for (int i = 0; i < 100; i++) { ... }'
+        * ForEach           : e.g 'foreach(string word in sentence) { ... }'
+        * Declaration/Variable declaration      : e.g 'string aDeclaration = "Hello, World!"'
+        * Struct            : e.g 'struct aStruct { ... }'
+        * Enum              : e.g 'enum anEnum { ... }'
+        * Switch            : e.g 'switch(enumVar) { case enum1.variant1: { ... break; } }'
+        * Break             : e.g 'break'
+        * Continue          : e.g 'continue'
+        * Goto              : e.g 'goto aLocation'
+        * Return            : e.g 'return (expression)'
+        * Throw             : e.g 'throw new Exception("Error occured")'
+        * Yield             : e.g 'yield (expression)'
+        * Try-Catch         : e.g 'try { ... } catch(Exception e) { ... }'
+        * Try-Finally       : e.g 'try { ... } finally { ... }'
+        * Try-Catch-Finally : e.g 'try { ... } catch(Exception e) { ... } finally { ... }'
+        * Checked           : e.g 'checked { ... }'
+        * Unchecked         : e.g 'unchecked { ... }'
+        * Await             : e.g 'await (expression)'
+        * Fixed             : e.g 'fixed (variable) { ... }'
+        * Lock              : e.g 'lock (variable) { ... }'
+        * Labels            : e.g 'aLocation:'
+        * Empty statement   : e.g ','
+    
+    Expressions
+        * Ternary Conditional Operator      : e.g 'aBool ? "isTrue" : "isFalse"'
+        * Binary Operations         : e.g '3 + 4 - 1'
+            * Add                   : e.g '1 + 1'
+            * Sub,                  : e.g '1 - 1'
+            * Mul,                  : e.g '1 * 1'
+            * Div,                  : e.g '1 / 1'
+            * Mod,                  : e.g '1 % 1'
+            * Left bit shift        : e.g '1 << 1'
+            * Right bit shift       : e'g '1 >> 1'
+        * Comparison Operations     : e.g '3 > 4'
+            * Less than             : e.g '1 < 1'
+            * Greater than          : e.g '1 > 1'
+            * Less or equal         : e.g '1 <= 1'
+            * Greater or equal      : e.g '1 >= 1'
+            * Equal to              : e.g '1 == 1'
+            * Not equal to          : e.g '1 != 1'
+ 
+ */
+
+using Mirage_Compiler.Compiler.Syntax_Analysis.AST.Expressions;
 using Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements;
 using Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements.Objects;
 using System;

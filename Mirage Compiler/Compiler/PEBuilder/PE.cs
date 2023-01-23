@@ -12,8 +12,8 @@ namespace Mirage_Compiler.Compiler.PEBuilder
         public string GccPath = @"C:\MinGW\bin\gcc.exe";
         public string GccDirectoryPath = @"C:\MinGW\bin";
 
-        public string ClangPath = @"C:\Program Files\LLVM\bin\clang.exe";
-        public string ClangDirectoryPath = "C:\\Program Files\\LLVM\\bin";
+        public string ClangPath = @"C:\Program Files (x86)\LLVM\bin\clang.exe";
+        public string ClangDirectoryPath = "C:\\Program Files (x86)\\LLVM\\bin";
 
         public void Build(string src)
         {
@@ -21,7 +21,7 @@ namespace Mirage_Compiler.Compiler.PEBuilder
             File.WriteAllText(this.ClangDirectoryPath + @"\out.ll", src);
 
             DebugOut.Info("Launching clang...");
-            Process clangProcess = Process.Start(this.ClangPath, "\"C:\\Program Files\\LLVM\\bin\\out.ll\" -o out.exe");
+            Process clangProcess = Process.Start(this.ClangPath, "\"C:\\Program Files (x86)\\LLVM\\bin\\out.ll\" -o out.exe");
             clangProcess.WaitForExit();
             DebugOut.Info("out.ll built to out.exe!");
 
