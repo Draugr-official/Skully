@@ -1,4 +1,8 @@
-<h1 align="center">The modern solution to C#</h1>
+
+<p align="center">
+  <img alt="Skully logo" src="https://media.discordapp.net/attachments/671694363235057675/1066985678346408037/image.png">
+</p>
+<h1 align="center">The official Skully compiler</h1>
 
 <p>Mirage is a user driven compiler dedicated to producing high performance, compact and self-contained software in C#</p>
 
