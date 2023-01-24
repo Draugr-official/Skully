@@ -20,6 +20,31 @@
   </ol>
 </p>
 
+<h2>Simple usage</h2>
+<p>These are command line arguments</p>
+<code>build</code>
+<p>Builds solution</p>
+<p>Arguments</p>
+<ol>
+  <li>target file</li>
+</ol>
+<p>Options</p>
+<ul>
+  <li><code>-showast</code> Displays the AST for the build</li>
+</ul>
+<hr>
+<code>benchmark</code>
+<p>Runs a benchmark on the compiler</p>
+<p>Arguments</p>
+<ol>
+  <li>target file</li>
+  <li>iterations</li>
+</ol>
+<p>Options</p>
+<ul>
+  
+</ul>
+
 <h2>Hello, World!</h2>
 <p>Every time we learn a new language or technology, we need a start project to understand what we're dealing with. We will start off with the classic 'Hello world' project to learn and understand how Skully works and how you can easily integrate it into your own projects.
 <br>
