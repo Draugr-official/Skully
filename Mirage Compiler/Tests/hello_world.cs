@@ -6,7 +6,8 @@ namespace hellonamespace
     {
         static void Main(string[] args)
         {
-            MessageBox.Show("RAHHHH");
+            string aVar = "Hello, World!";
+            MessageBox.Show(aVar);
         }
     }
 }

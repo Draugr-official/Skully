@@ -17,7 +17,7 @@ namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements
         public DataType ReturnType = new DataType();
         public string Name = "";
 
-        public Expression DefaultValue = new Expression();
+        public Expression DefaultValue = new EmptyExpression();
 
         public VariableStatement(List<Modifiers> modifiers, DataType returnType, string name, Expression defaultValue)
         {
@@ -31,7 +31,7 @@ namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements
 
         public override string ToString()
         {
-            return "";
+            return $"{this.ReturnType.Value} {this.Name} = {this.DefaultValue.ToString()};";
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements
 
         public override string ToString()
         {
-            return String.Join("", this.Statements.Select(t => t.ToString()));
+            return String.Join("\n", this.Statements.Select(t => t.ToString()));
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Expressions
 {
-    internal class LiteralExpression : Expression
+    class LiteralExpression : Expression
     {
         public string Value = "";
         public LiteralTypes Type = LiteralTypes.Unknown;

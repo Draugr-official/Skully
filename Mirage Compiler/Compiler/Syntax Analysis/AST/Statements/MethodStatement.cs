@@ -29,7 +29,7 @@ namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements
 
         public override string ToString()
         {
-            return $"{Objects.ModifierInfo.ListToString(this.Modifiers)} {(this.ReturnType.Type == DataTypes.Other ? this.ReturnType.Value : Objects.DataTypeInfo.Names[this.ReturnType.Type])} {this.Name}(" 
+            return $"{Objects.ModifierInfo.ListToString(this.Modifiers)} {(this.ReturnType.Type == DataTypes.Other ? this.ReturnType.Value : Objects.DataTypeInfo.ToString[this.ReturnType.Type])} {this.Name}(" 
                 + String.Join(", ", this.Arguments.Select(t => t.ToString())) + ")\n{\n" + this.Body.ToString() + "}\n";
         }
     }

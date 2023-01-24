@@ -136,6 +136,14 @@ namespace Mirage_Compiler.Compiler.SyntaxAnalysis
 
                     case ',': Type = LexType.Comma; break;
 
+                    case '=': Type = LexType.Equals; break;
+
+                    case '%':
+                    case '/':
+                    case '*':
+                    case '-':
+                    case '+': Type = LexType.Operator; break;
+
                     case '"':
                         {
                             i++;
@@ -278,6 +286,16 @@ namespace Mirage_Compiler.Compiler.SyntaxAnalysis
         /// E.g ','
         /// </summary>
         Comma,
+
+        /// <summary>
+        /// E.g '='
+        /// </summary>
+        Equals,
+
+        /// <summary>
+        /// E.g '+, -'
+        /// </summary>
+        Operator,
 
         /// <summary>
         /// E.g '"Hello World"'

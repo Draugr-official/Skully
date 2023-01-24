@@ -19,7 +19,7 @@ namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements.Objects
             }
             else
             {
-                return DataTypeInfo.Names[this.Type];
+                return DataTypeInfo.ToString[this.Type];
             }
         }
     }
@@ -49,7 +49,7 @@ namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements.Objects
 
     public class DataTypeInfo
     {
-        public static Dictionary<DataTypes, string> Names = new Dictionary<DataTypes, string>()
+        public static new Dictionary<DataTypes, string> ToString = new Dictionary<DataTypes, string>()
         {
             { DataTypes.Boolean, "bool" },
             { DataTypes.Byte, "byte" },
@@ -69,6 +69,28 @@ namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Statements.Objects
             { DataTypes.Var, "var" },
             { DataTypes.Dynamic, "dynamic" },
             { DataTypes.Void, "void" },
+        };
+
+        public static Dictionary<string, DataTypes> ToType = new Dictionary<string, DataTypes>()
+        {
+            { "bool", DataTypes.Boolean  },
+            { "byte", DataTypes.Byte },
+            {  "sbyte", DataTypes.Sbyte  },
+            { "char", DataTypes.Char },
+            { "decimal", DataTypes.Decimal },
+            { "double", DataTypes.Double },
+            { "float", DataTypes.Float },
+            { "int", DataTypes.Int },
+            { "uint", DataTypes.UInt },
+            { "long", DataTypes.Long },
+            { "ulong", DataTypes.ULong },
+            { "object", DataTypes.Object },
+            { "short", DataTypes.Short },
+            { "ushort", DataTypes.UShort },
+            { "string", DataTypes.String },
+            { "var", DataTypes.Var },
+            { "dynamic", DataTypes.Dynamic },
+            { "void", DataTypes.Void },
         };
     }
 }

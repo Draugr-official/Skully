@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Expressions
 {
-    public class Expression
+    class NullExpression : Expression
     {
+        public override string ToString()
+        {
+            return "null";
+        }
     }
 }

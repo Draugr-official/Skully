@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace Mirage_Compiler.Compiler.Syntax_Analysis.AST.Expressions
 {
-    public class Expression
+    internal class VariableExpression : Expression
     {
+        public string Name = "";
+
+        public override string ToString()
+        {
+            return this.Name;
+        }
     }
 }

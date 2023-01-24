@@ -23,7 +23,7 @@ TODO:
         * DoWhile           : e.g 'do { ... } while(condition)'
         * For               : e.g 'for (int i = 0; i < 100; i++) { ... }'
         * ForEach           : e.g 'foreach(string word in sentence) { ... }'
-        * Declaration/Variable declaration      : e.g 'string aDeclaration = "Hello, World!"'
+        DONE * Declaration/Variable declaration      : e.g 'string aDeclaration = "Hello, World!"'
         * Struct            : e.g 'struct aStruct { ... }'
         * Enum              : e.g 'enum anEnum { ... }'
         * Switch            : e.g 'switch(enumVar) { case enum1.variant1: { ... break; } }'
@@ -42,16 +42,16 @@ TODO:
         * Fixed             : e.g 'fixed (variable) { ... }'
         * Lock              : e.g 'lock (variable) { ... }'
         * Labels            : e.g 'aLocation:'
-        * Empty statement   : e.g ','
+        DONE * Empty statement   : e.g ';'
     
     Expressions
         * Ternary Conditional Operator      : e.g 'aBool ? "isTrue" : "isFalse"'
-        * Binary Operations         : e.g '3 + 4 - 1'
-            * Add                   : e.g '1 + 1'
-            * Sub,                  : e.g '1 - 1'
-            * Mul,                  : e.g '1 * 1'
-            * Div,                  : e.g '1 / 1'
-            * Mod,                  : e.g '1 % 1'
+        * Binary Operations         : e.g '3 + 4 - 1' - In Progress
+            DONE * Add                   : e.g '1 + 1'
+            DONE * Sub,                  : e.g '1 - 1'
+            DONE * Mul,                  : e.g '1 * 1'
+            DONE * Div,                  : e.g '1 / 1'
+            DONE * Mod,                  : e.g '1 % 1'
             * Left bit shift        : e.g '1 << 1'
             * Right bit shift       : e'g '1 >> 1'
         * Comparison Operations     : e.g '3 > 4'
@@ -61,6 +61,7 @@ TODO:
             * Greater or equal      : e.g '1 >= 1'
             * Equal to              : e.g '1 == 1'
             * Not equal to          : e.g '1 != 1'
+        DONE * Variable expression       : e.g 'someVar'
  
  */
 
@@ -181,7 +182,7 @@ namespace Mirage_Compiler.Compiler.SyntaxAnalysis
             }
 
 
-            if (DataTypeInfo.Names.ContainsValue(tokenReader.Peek(_base).Value))
+            if (DataTypeInfo.ToString.ContainsValue(tokenReader.Peek(_base).Value))
             {
                 string dataType = tokenReader.Peek(_base).Value;
                 _base += 1;
@@ -202,7 +203,7 @@ namespace Mirage_Compiler.Compiler.SyntaxAnalysis
                         tokenReader.Skip(1);
 
                         methodStatement.Modifiers = Modifiers;
-                        methodStatement.ReturnType = new DataType() { Type = DataTypeInfo.Names.FirstOrDefault(x => x.Value == dataType).Key };
+                        methodStatement.ReturnType = new DataType() { Type = DataTypeInfo.ToString.FirstOrDefault(x => x.Value == dataType).Key };
                         methodStatement.Name = name;
                         if(ParseBlockStatement(out BlockStatement blockStatement))
                         {
@@ -241,6 +242,51 @@ namespace Mirage_Compiler.Compiler.SyntaxAnalysis
             return false;
         }
 
+        public bool ParseVariableStatement(out VariableStatement variableStatement)
+        {
+            variableStatement = new VariableStatement();
+
+            if(tokenReader.Expect(LexType.Keyword) && DataTypeInfo.ToType.ContainsKey(tokenReader.Peek().Value))
+            {
+                if(tokenReader.Expect(LexType.Identifier, 1))
+                {
+                    if (tokenReader.Expect(LexType.Semicolon, 2))
+                    {
+                        variableStatement.ReturnType = new DataType { 
+                            Type = DataTypeInfo.ToType[tokenReader.Peek().Value], 
+                            Value = tokenReader.Peek().Value 
+                        };
+                        variableStatement.Name = tokenReader.Peek(1).Value;
+                        tokenReader.Skip(3);
+                        return true;
+                    }
+                    else if(tokenReader.Expect(LexType.Equals, 2))
+                    {
+                        variableStatement.ReturnType = new DataType { 
+                            Type = DataTypeInfo.ToType[tokenReader.Peek().Value], 
+                            Value = tokenReader.Peek().Value 
+                        };
+
+                        variableStatement.Name = tokenReader.Peek(1).Value;
+                        tokenReader.Skip(3);
+                        if (ParseExpression(out Expression value))
+                        {
+                            variableStatement.DefaultValue = value;
+                        }
+                        else throw new Exception("Could not parse variable assignment"); // THROWS EXCEPTION, POSSIBLE ERROR WHEN PARSING EXPRESSION - MAYBE NOT RETURNING?
+
+                        if(tokenReader.ExpectFatal(LexType.Semicolon))
+                        {
+                            tokenReader.Skip(1);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public bool ParseStatement(out Statement statement)
         {
             statement = new Statement();
@@ -248,6 +294,12 @@ namespace Mirage_Compiler.Compiler.SyntaxAnalysis
             if(ParseBlockStatement(out BlockStatement blockStatement))
             {
                 statement = blockStatement;
+                return true;
+            }
+
+            if(ParseVariableStatement(out VariableStatement variableStatement))
+            {
+                statement = variableStatement;
                 return true;
             }
 
@@ -318,17 +370,62 @@ namespace Mirage_Compiler.Compiler.SyntaxAnalysis
             return false;
         }
 
-        public bool ParseExpression(out Expression expression)
+        public bool ParseVariableExpression(out VariableExpression variableExpression)
         {
-            expression = new Expression();
+            variableExpression = new VariableExpression();
 
-            if(ParseLiteralExpression(out LiteralExpression literalExpression))
+            if(tokenReader.Expect(LexType.Identifier))
             {
-                expression = literalExpression;
+                variableExpression.Name = tokenReader.Peek().Value;
+                tokenReader.Skip(1);
                 return true;
             }
 
             return false;
+        }
+
+        public bool ParseBinaryExpression(Expression leftExpression, out BinaryExpression binaryExpression)
+        {
+            binaryExpression = new BinaryExpression();
+            if(tokenReader.Expect(LexType.Operator))
+            {
+                binaryExpression.Left = leftExpression;
+                binaryExpression.Operator = (BinaryInfix)char.Parse(tokenReader.Peek().Value);
+                tokenReader.Skip(1);
+                if(ParseExpression(out Expression rightExpression))
+                {
+                    binaryExpression.Right = rightExpression;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool ParseExpression(out Expression expression)
+        {
+            expression = new EmptyExpression();
+            if(ParseLiteralExpression(out LiteralExpression literalExpression))
+            {
+                expression = literalExpression;
+            }
+            if(ParseVariableExpression(out VariableExpression variableExpression))
+            {
+                expression = variableExpression;
+            }
+
+            if (ParseBinaryExpression(expression, out BinaryExpression binaryExpression))
+            {
+                expression = binaryExpression;
+            }
+
+            if(expression is EmptyExpression)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public List<Expression> ParseExpressions()
