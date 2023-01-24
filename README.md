@@ -1,4 +1,3 @@
-<p align="center">🚧 THIS PAGE IS STILL UNDER CONSTRUCTION 🚧</p>
 <p align="center">
   <img alt="Skully logo" src="https://media.discordapp.net/attachments/671694363235057675/1067004440554512454/image.png">
 </p>
