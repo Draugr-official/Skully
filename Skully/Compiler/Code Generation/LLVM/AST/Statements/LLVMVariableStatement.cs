@@ -10,11 +10,11 @@ namespace Skully_Compiler.Compiler.Code_Generation.LLVM.AST.Statements
     /// <summary>
     /// LLVM variable declaration. %hi = add i8 4, 5
     /// </summary>
-    struct LLVMVariableStatement : LLVMStatement
+    class LLVMVariableStatement : LLVMStatement
     {
-        public bool isLocal { get; set; }
-        public string Name { get; set; }
-        public LLVMExpression Assign { get; set; }
+        public bool isLocal = false;
+        public string Name = "";
+        public LLVMExpression Assign = new LLVMExpression();
 
         public override string ToString()
         {

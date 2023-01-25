@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Skully_Compiler.Compiler.Code_Generation.LLVM.AST.Expressions
 {
-    interface LLVMExpression
+    class LLVMExpression
     {
     }
 }

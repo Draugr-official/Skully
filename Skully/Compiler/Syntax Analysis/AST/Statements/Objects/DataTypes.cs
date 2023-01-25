@@ -8,8 +8,10 @@ namespace Skully_Compiler.Compiler.Syntax_Analysis.AST.Statements.Objects
 {
     public struct DataType
     {
-        public DataTypes Type;
-        public string Value;
+        public DataTypes Type = DataTypes.Unknown;
+        public string Value = "";
+
+        public DataType() { }
 
         public override string ToString()
         {
@@ -26,6 +28,7 @@ namespace Skully_Compiler.Compiler.Syntax_Analysis.AST.Statements.Objects
 
     public enum DataTypes
     {
+        Unknown,
         Boolean,
         Byte,
         Sbyte,
