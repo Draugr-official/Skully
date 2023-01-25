@@ -6,7 +6,7 @@ namespace hellonamespace
     {
         static void Main(string[] args)
         {
-
+            
         }
     }
 }

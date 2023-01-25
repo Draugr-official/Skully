@@ -11,5 +11,10 @@ namespace Skully_Compiler.Compiler.Code_Generation.LLVM.AST.Expressions
     {
         public string Name = "";
         public string ReturnType = LLVMDataTypes.i32;
+
+        public override string ToString()
+        {
+            return $"{this.ReturnType} {this.Name}";
+        }
     }
 }

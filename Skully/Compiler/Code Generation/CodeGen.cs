@@ -14,6 +14,7 @@ namespace Skully_Compiler.Compiler.Code_Generation
     internal class CodeGen
     {
         List<Statement> CsStatements = new List<Statement>();
+        List<LLVMStatement> LLVMstatements = new List<LLVMStatement>();
 
         public CodeGen(List<Statement> statements)
         {
@@ -27,8 +28,6 @@ namespace Skully_Compiler.Compiler.Code_Generation
 
         public List<LLVMStatement> GenerateStatements(BlockStatement csStatements)
         {
-            List<LLVMStatement> LLVMstatements = new List<LLVMStatement>();
-
             foreach(Statement csStatement in csStatements.Statements)
             {
                 LLVMstatements.Add(GenerateStatement(csStatement));

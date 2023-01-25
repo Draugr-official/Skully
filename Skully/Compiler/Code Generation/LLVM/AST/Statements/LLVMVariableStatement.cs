@@ -18,7 +18,7 @@ namespace Skully_Compiler.Compiler.Code_Generation.LLVM.AST.Statements
 
         public override string ToString()
         {
-            return (this.isLocal ? "%" : "@") + this.Name + " = " + this.Assign.ToString();
+            return "variable " + this.Name;
         }
     }
 }

@@ -72,6 +72,7 @@ namespace Skully_Compiler
             // Generate lexical tokens
             Lexer lexer = new Lexer();
             List<LexToken> lexTokens = lexer.Analyze(src);
+            DebugOut.Info("Generated lex tokens");
 
             // Create abstract syntax tree
             Parser parser = new Parser(lexTokens);
@@ -82,6 +83,7 @@ namespace Skully_Compiler
                 DebugOut.Info("Abstact syntax tree:");
                 Console.WriteLine(String.Join("\n", statements.Select(t => t.ToString()).ToList()));
             }
+            DebugOut.Info("Generated AST");
 
             CodeGen codeGen = new CodeGen(statements);
             List<LLVMStatement> LLVMStatements = codeGen.Generate();
@@ -89,8 +91,10 @@ namespace Skully_Compiler
             if (debug)
             {
                 DebugOut.Info("LLVM:");
-                Console.WriteLine(String.Join("\n", LLVMStatements.Select(t => t.ToString()).ToList()));
+                DebugOut.Info($"{LLVMStatements.Count} elements");
+                Console.WriteLine(String.Join("\n", LLVMStatements.Select(t => t.ToString())));
             }
+            DebugOut.Info("Generated LLVM");
 
             return statements;
         }

@@ -40,7 +40,7 @@ namespace Skully_Compiler.Compiler.Code_Generation.LLVM.AST.Statements
 
         public override string ToString()
         {
-            return $"define {this.ReturnType} {this.Name}({string.Join(", ", this.Parameters.Select(t => t.ToString()))})\n" + "{\n" + string.Join("\n", this.Body.Select(t => t.ToString())) + "\n}";
+            return $"define {this.ReturnType} {(this.isLocal ? "%" : "@")}{this.Name}({this.Parameters.Select(t => t.ToString())})\n" + "{\n" + "\n}";
         }
     }
 }
