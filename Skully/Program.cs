@@ -1,102 +1,57 @@
-﻿using Skully_Compiler.Compiler;
-using Skully_Compiler.Compiler.Code_Generation;
-using Skully_Compiler.Compiler.Syntax_Analysis.AST.Statements;
-using Skully_Compiler.Compiler.SyntaxAnalysis;
-using Skully_Compiler.Compiler.PEBuilder;
+﻿using LLVMSharp;
+using Skully.Compiler.CodeGen;
 using System.Diagnostics;
-using System.IO;
-using Skully_Compiler.Compiler.Code_Generation.LLVM.Objects;
-using Skully_Compiler.Compiler.Code_Generation.LLVM.AST.Statements;
 
-namespace Skully_Compiler
+namespace Skully
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            HandleCommands(new string[] { "build", "Tests/hello_world.cs", "-showast" });
-            // HandleCommands(args);
-        }
-
-        static void HandleCommands(string[] args)
-        {
-            if(args.Length > 0)
+            for(; ; )
             {
-                switch (args[0])
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                string File = @"using System;
+
+class Program
+{
+    static void Main()
+    {
+        Console.WriteLine(""Hello, World!"");
+        Console.WriteLine(""How are you?"", ""I'm good"");
+    }
+}";
+
+                CodeGenConfig config = new CodeGenConfig()
                 {
-                    case "build":
-                        {
-                            List<Statement> statements = Build(args[1], args.Contains("-showast"));
-                            break;
-                        }
+                    Name = "TestProject"
+                };
+                CodeGenerator codeGenerator = new CodeGenerator(File, config);
+                codeGenerator.GenerateLLVM();
 
-                    case "benchmark":
-                        {
-                            if (int.TryParse(args[2], out int count))
-                            {
-                                string Source = File.ReadAllText(args[1]);
-                                Stopwatch sw = new Stopwatch();
-                                sw.Start();
+                Debug.Log("Compile files? Hit enter");
+                Console.ReadLine();
 
-                                for (int i = 0; i < count; i++)
-                                {
-                                    BuildSource(Source);
-                                }
+                ProcessStartInfo clang = new ProcessStartInfo();
+                clang.FileName = @"C:\Windows\system32\cmd.exe";
+                clang.Arguments = $"/c clang out.ll -o {config.Name}.exe";
+                Process clangProcess = Process.Start(clang);
+                clangProcess.WaitForExit();
 
-                                sw.Stop();
-                                DebugOut.Success($"Ran build {count} times, took {sw.ElapsedMilliseconds}ms");
-                            }
-                            break;
-                        }
+                Debug.Success($"Built app to {config.Name}.exe");
+                sw.Stop();
+                Debug.Log($"Elapsed {sw.Elapsed.TotalMilliseconds}ms");
 
-                    default:
-                        {
-                            DebugOut.Error($"Command '{args[0]}' does not exist");
-                            break;
-                        }
-                }
+                Debug.Log("Run executeable? Hit enter");
+                Console.ReadLine();
+
+                Process ah = Process.Start($"{config.Name}.exe");
+                ah.WaitForExit();
+
+                Console.ReadLine();
+                Console.Clear();
             }
-            else
-            {
-                DebugOut.Info($"Welcome to Skully! Check out https://github.com/Draugr-official/Skully to learn how to use this compiler.");
-            }
-        }
-
-        static List<Statement> Build(string path, bool debug = false)
-        {
-            return BuildSource(File.ReadAllText(path), debug);
-        }
-
-        static List<Statement> BuildSource(string src, bool debug = false)
-        {
-            // Generate lexical tokens
-            Lexer lexer = new Lexer();
-            List<LexToken> lexTokens = lexer.Analyze(src);
-            DebugOut.Info("Generated lex tokens");
-
-            // Create abstract syntax tree
-            Parser parser = new Parser(lexTokens);
-            List<Statement> statements = parser.ParseStatements();
-
-            if(debug)
-            {
-                DebugOut.Info("Abstact syntax tree:");
-                Console.WriteLine(String.Join("\n", statements.Select(t => t.ToString()).ToList()));
-            }
-            DebugOut.Info("Generated AST");
-
-            CodeGen codeGen = new CodeGen(statements);
-            List<LLVMStatement> LLVMStatements = codeGen.Generate();
-
-            if (debug)
-            {
-                DebugOut.Info("LLVM:");
-                DebugOut.Info($"{LLVMStatements.Count} elements");
-                Console.WriteLine(String.Join("\n", LLVMStatements.Select(t => t.ToString())));
-            }
-            DebugOut.Info("Generated LLVM");
-
-            return statements;
         }
     }
 }

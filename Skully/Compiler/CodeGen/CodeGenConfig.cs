@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Skully_Compiler.Compiler.Syntax_Analysis.AST.Expressions
+namespace Skully.Compiler.CodeGen
 {
-    internal class Expression
+    public struct CodeGenConfig
     {
+        public string Name { get; set; }
     }
 }
