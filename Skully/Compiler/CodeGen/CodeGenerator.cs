@@ -60,6 +60,23 @@ namespace Skully.Compiler.CodeGen
                 Debug.Error("You're missing an entry point", "Create a new function named 'Main' or make sure you haven't misspelled the name");
             }
 
+            //if (LLVM.CreateMemoryBufferWithContentsOfFile("cs-stl.ll", out LLVMMemoryBufferRef llvmBuffer, out string error))
+            //{
+            //    Debug.Error(error);
+            //}
+            //else
+            //{
+            //    LLVMContextRef llvmContext = LLVM.GetGlobalContext();
+            //    if (LLVM.ParseBitcodeInContext(llvmContext, llvmBuffer, out LLVMModuleRef llvmModule, out string parseError))
+            //    {
+            //        Debug.Error(parseError);
+            //    }
+            //    else
+            //    {
+            //        // ...
+            //    }
+            //}
+
             LLVM.PrintModuleToFile(module, "out.ll", out string ErrorMessage);
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
