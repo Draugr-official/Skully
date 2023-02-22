@@ -9,5 +9,7 @@ namespace Skully.Compiler.CodeGen
     public struct CodeGenConfig
     {
         public string Name { get; set; }
+
+        public bool Build { get; set; }
     }
 }

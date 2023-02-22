@@ -19,13 +19,16 @@ namespace Skully.Compiler.CodeGen
         public LLVMModuleRef module;
         public LLVMBuilderRef builder;
 
+        string EntryFile = "";
+
         bool MainExists = false;
 
-        public CodeGenerator(string source, CodeGenConfig config)
+        public CodeGenerator(string file, CodeGenConfig config)
         {
+            this.EntryFile = file;
             this.Config = config;
             this.module = LLVM.ModuleCreateWithName(config.Name);
-            this.AST = CSharpSyntaxTree.ParseText(source);
+            this.AST = CSharpSyntaxTree.ParseText(File.ReadAllText(file));
         }
 
         public void GenerateLLVM()
@@ -45,19 +48,10 @@ namespace Skully.Compiler.CodeGen
             // Generate LLVM
             CompilationUnitSyntax compilationUnit = this.AST.GetCompilationUnitRoot();
             GenerateSyntaxNodes(compilationUnit.ChildNodes());
-
-            /// Dispose and output LLVM IR
-            LLVM.DisposeBuilder(builder);
-            LLVM.DumpModule(module);
-            LLVM.VerifyModule(module, LLVMVerifierFailureAction.LLVMReturnStatusAction, out var message);
-            if (!string.IsNullOrEmpty(message))
+            
+            if (!MainExists)
             {
-                Debug.Error(message);
-            }
-
-            if(!MainExists)
-            {
-                Debug.Error("You're missing an entry point", "Create a new function named 'Main' or make sure you haven't misspelled the name");
+                Debug.Error("You're missing an entry point", "Add a `Main` method to the file", this.EntryFile);
             }
 
             //if (LLVM.CreateMemoryBufferWithContentsOfFile("cs-stl.ll", out LLVMMemoryBufferRef llvmBuffer, out string error))
@@ -76,45 +70,23 @@ namespace Skully.Compiler.CodeGen
             //        // ...
             //    }
             //}
-
-            LLVM.PrintModuleToFile(module, "out.ll", out string ErrorMessage);
-            if (!string.IsNullOrEmpty(ErrorMessage))
+            
+            if(!Debug.HasError)
             {
-                Debug.Error(ErrorMessage);
-            }
-        }
-
-        void GenerateSyntaxNodes(IEnumerable<SyntaxNode> syntaxNodes)
-        {
-            foreach (SyntaxNode node in syntaxNodes)
-            {
-                GenerateSyntaxNode(node);
-            }
-        }
-
-        void GenerateSyntaxNode(SyntaxNode syntaxNode)
-        {
-            if(syntaxNode != null)
-            {
-                switch (syntaxNode.Kind())
+                LLVM.DisposeBuilder(builder);
+                LLVM.VerifyModule(module, LLVMVerifierFailureAction.LLVMReturnStatusAction, out var message);
+                if (!string.IsNullOrEmpty(message))
                 {
-                    case SyntaxKind.ClassDeclaration:
-                        {
-                            GenerateClassDeclaration((ClassDeclarationSyntax)syntaxNode);
-                            break;
-                        }
-
-                    case SyntaxKind.MethodDeclaration:
-                        {
-                            GenerateMethodDeclaration((MethodDeclarationSyntax)syntaxNode);
-                            break;
-                        }
-
-                    case SyntaxKind.ExpressionStatement:
-                        {
-                            GenerateExpressionStatement((ExpressionStatementSyntax)syntaxNode);
-                            break;
-                        }
+                    LLVM.DumpModule(module);
+                    Debug.Error(message);
+                }
+                if (this.Config.Build)
+                {
+                    LLVM.PrintModuleToFile(module, "out.ll", out string ErrorMessage);
+                    if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        Debug.Error(ErrorMessage);
+                    }
                 }
             }
         }
@@ -150,6 +122,79 @@ namespace Skully.Compiler.CodeGen
         {
             GenerateSyntaxNodes(ifStatement.ChildNodes());
         }
+        
+        void GenerateSyntaxNodes(IEnumerable<SyntaxNode> syntaxNodes)
+        {
+            foreach (SyntaxNode node in syntaxNodes)
+            {
+                GenerateSyntaxNode(node);
+            }
+        }
+
+        void GenerateSyntaxNode(SyntaxNode syntaxNode)
+        {
+            if (syntaxNode != null)
+            {
+                switch (syntaxNode.Kind())
+                {
+                    case SyntaxKind.ClassDeclaration:
+                        {
+                            GenerateClassDeclaration((ClassDeclarationSyntax)syntaxNode);
+                            break;
+                        }
+
+                    case SyntaxKind.MethodDeclaration:
+                        {
+                            GenerateMethodDeclaration((MethodDeclarationSyntax)syntaxNode);
+                            break;
+                        }
+
+                    case SyntaxKind.ExpressionStatement:
+                        {
+                            GenerateExpressionStatement((ExpressionStatementSyntax)syntaxNode);
+                            break;
+                        }
+
+                    case SyntaxKind.IfStatement:
+                        {
+                            break;
+                        }
+                }
+            }
+        }
+
+        LLVMValueRef GenerateLiteralExpressiona(LiteralExpressionSyntax literalExpression)
+        {
+            switch (literalExpression.Kind())
+            {
+                case SyntaxKind.FalseLiteralExpression:
+                    {
+                        return LLVM.ConstInt(LLVM.Int1Type(), 0, false);
+                    }
+
+                case SyntaxKind.TrueLiteralExpression:
+                    {
+                        return LLVM.ConstInt(LLVM.Int1Type(), 1, false);
+                    }
+
+                case SyntaxKind.NumericLiteralExpression:
+                    {
+                        return LLVM.ConstInt(LLVM.Int32Type(), uint.Parse(literalExpression.Token.ValueText), false);
+                    }
+
+                case SyntaxKind.CharacterLiteralExpression:
+                    {
+                        return LLVM.ConstInt(LLVM.Int8Type(), (uint)literalExpression.Token.ValueText[0], false);
+                    }
+
+                case SyntaxKind.StringLiteralExpression:
+                    {
+                        return LLVM.ConstStringInContext(LLVM.GetGlobalContext(), literalExpression.Token.ValueText, (uint)literalExpression.Token.ValueText.Length, true);
+                    }
+            }
+
+            return LLVM.ConstInt(LLVM.Int32Type(), 0, false);
+        }
 
         void GenerateExpressionStatement(ExpressionStatementSyntax expressionStatement)
         {
@@ -181,7 +226,7 @@ namespace Skully.Compiler.CodeGen
         LLVMValueRef GenerateNumericExpression(LiteralExpressionSyntax numericExpression) // TODO: Add all numeric types
         {
             LLVMTypeRef type = LLVM.Int32Type();
-
+            
             switch(numericExpression.Token.Value)
             {
                 case Int16: type = LLVM.Int16Type(); break;
@@ -195,10 +240,11 @@ namespace Skully.Compiler.CodeGen
         
         LLVMValueRef GenerateStringExpression(LiteralExpressionSyntax stringExpression)
         {
-            string literalValue = stringExpression.GetText().ToString();
-            literalValue = literalValue.Substring(1, literalValue.Length - 2);
-            var str = LLVM.BuildGlobalString(builder, literalValue, "");
-            return LLVM.ConstGEP(str, new LLVMValueRef[] { LLVM.ConstInt(LLVM.Int32Type(), 0, false), LLVM.ConstInt(LLVM.Int32Type(), 0, false) });
+            //string literalValue = stringExpression.GetText().ToString();
+            //literalValue = literalValue.Substring(1, literalValue.Length - 2);
+            //var str = LLVM.BuildGlobalString(builder, literalValue, "");
+            //return LLVM.ConstGEP(str, new LLVMValueRef[] { LLVM.ConstInt(LLVM.Int32Type(), 0, false), LLVM.ConstInt(LLVM.Int32Type(), 0, false) });
+            return LLVM.ConstStringInContext(LLVM.GetGlobalContext(), stringExpression.Token.ValueText, (uint)stringExpression.Token.ValueText.Length, true);
         }
         
         LLVMValueRef GenerateLiteralExpression(LiteralExpressionSyntax literalExpression)

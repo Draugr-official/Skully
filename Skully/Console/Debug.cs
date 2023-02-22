@@ -8,6 +8,8 @@ namespace Skully
 {
     internal class Debug
     {
+        public static bool HasError = false;
+
         public static void Log(string message, string suggestion = "")
         {
             Console.ForegroundColor = ConsoleColor.Blue;
@@ -24,20 +26,31 @@ namespace Skully
             }
         }
 
-        public static void Error(string message, string suggestion = "")
+        public static void Error(string message, string suggestion = "", string fileName = "")
         {
+            HasError = true;
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("error: ");
-            Console.WriteLine(message);
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("error");
+
+            if (fileName != "")
+            {
+                Console.Write("[");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write(fileName);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("]");
+            }
+            
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine($": {message}");
 
             if (suggestion != "")
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write("suggestion -> ");
-                Console.WriteLine(suggestion);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"^ {suggestion}");
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
+            Console.ForegroundColor = ConsoleColor.Gray;
         }
 
         public static void Warn(string message, string suggestion = "")
