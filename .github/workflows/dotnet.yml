@@ -28,4 +28,4 @@ jobs:
       run: dotnet test Skully --no-build --verbosity normal
     - name: Skully test
       run: |
-        echo cd
+        echo %cd%
