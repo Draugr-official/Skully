@@ -177,19 +177,43 @@ namespace Skully.Compiler.CodeGen
 
             return LLVM.ConstNull(LLVM.Int8Type());
         }
+        
+        LLVMValueRef GenerateNumericExpression(LiteralExpressionSyntax numericExpression) // TODO: Add all numeric types
+        {
+            LLVMTypeRef type = LLVM.Int32Type();
 
+            switch(numericExpression.Token.Value)
+            {
+                case Int16: type = LLVM.Int16Type(); break;
+                case Int32: type = LLVM.Int32Type(); break;
+                case Int64: type = LLVM.Int64Type(); break;
+                case Byte: type = LLVM.Int8Type(); break;
+            }
+
+            return LLVM.ConstInt(type, Convert.ToUInt64(numericExpression.Token.Value), false);
+        }
+        
+        LLVMValueRef GenerateStringExpression(LiteralExpressionSyntax stringExpression)
+        {
+            string literalValue = stringExpression.GetText().ToString();
+            literalValue = literalValue.Substring(1, literalValue.Length - 2);
+            var str = LLVM.BuildGlobalString(builder, literalValue, "");
+            return LLVM.ConstGEP(str, new LLVMValueRef[] { LLVM.ConstInt(LLVM.Int32Type(), 0, false), LLVM.ConstInt(LLVM.Int32Type(), 0, false) });
+        }
+        
         LLVMValueRef GenerateLiteralExpression(LiteralExpressionSyntax literalExpression)
         {
             switch (literalExpression.Kind())
             {
                 case SyntaxKind.StringLiteralExpression:
                     {
-                        string literalValue = literalExpression.GetText().ToString();
-                        literalValue = literalValue.Substring(1, literalValue.Length - 2);
-                        var str = LLVM.BuildGlobalString(builder, literalValue, "");
-                        var format = LLVM.ConstGEP(str, new LLVMValueRef[] { LLVM.ConstInt(LLVM.Int32Type(), 0, false), LLVM.ConstInt(LLVM.Int32Type(), 0, false) });
-                        return format;
+                        return GenerateStringExpression(literalExpression);
                     }
+                case SyntaxKind.NumericLiteralExpression:
+                    {
+                        return GenerateNumericExpression(literalExpression);
+                    }
+                    
             }
             return LLVM.ConstNull(LLVM.Int8Type());
         }

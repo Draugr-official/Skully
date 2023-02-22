@@ -19,7 +19,7 @@ class Program
     static void Main()
     {
         Console.WriteLine(""Hello, World!"");
-        Console.WriteLine(""How are you?"", ""I'm good"");
+        Console.WriteLine(""How are you?"", 1231);
     }
 }";
 
