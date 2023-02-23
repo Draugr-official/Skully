@@ -4,7 +4,7 @@
 <h1 align="center">The official Skully compiler</h1>
 <p align="center">
   <img src="https://github.com/Draugr-official/Skully/actions/workflows/dotnet.yml/badge.svg">
-  <img alt="GitHub" src="https://img.shields.io/github/license/draugr-official/skully">
+  <img src="https://img.shields.io/badge/version-0.0.2-blue">
 </p>
 
 <h2>Introduction</h2>
