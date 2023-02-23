@@ -8,10 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Tests\conditional.cs" />
     <Compile Remove="Tests\hello-world.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Tests\conditional.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Tests\hello-world.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -20,6 +24,12 @@
   <ItemGroup>
     <PackageReference Include="LLVMSharp" Version="5.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Standard Library\win64.ll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -26,7 +26,7 @@ namespace Skully
             }
         }
 
-        public static void Error(string message, string suggestion = "", string fileName = "")
+        public static Exception Error(string message, string suggestion = "", string fileName = "")
         {
             HasError = true;
             Console.ForegroundColor = ConsoleColor.Red;
@@ -51,6 +51,8 @@ namespace Skully
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
             Console.ForegroundColor = ConsoleColor.Gray;
+
+            return new Exception($"{message}[{fileName}]\n^ {suggestion}");
         }
 
         public static void Warn(string message, string suggestion = "")

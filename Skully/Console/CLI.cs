@@ -19,7 +19,8 @@ namespace Skully
                     {
                         CodeGenConfig config = new CodeGenConfig()
                         {
-                            Name = Path.GetFileNameWithoutExtension(args[0])
+                            Name = Path.GetFileNameWithoutExtension(args[0]),
+                            Build = true
                         };
                         CodeGenerator codeGenerator = new CodeGenerator(args[0], config);
                         codeGenerator.GenerateLLVM();
