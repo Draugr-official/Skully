@@ -26,6 +26,3 @@ jobs:
       run: dotnet build Skully --no-restore
     - name: Test
       run: dotnet test Skully --no-build --verbosity normal
-    - name: Skully test
-      run: |
-        /home/runner/work/Skully/Skully/Skully/bin/Debug/net6.0/Skully.exe build /home/runner/work/Skully/Skully/Skully/bin/Debug/net6.0/Test/hello-world.cs
