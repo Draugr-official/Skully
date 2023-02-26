@@ -16,7 +16,7 @@ All executeables are compiled as their release/most optimized variant.
 
 |Language|Code|Elapsed time(avg)|
 |--|--|--|
-| Skully | ```Console.WriteLine("Hello, World!");``` | 565ms |
+| C#(Skully) | ```Console.WriteLine("Hello, World!");``` | 565ms |
 | Rust(rustc) | ```println!("Hello, World!");``` | 625ms |
 | Cpp(gcc) | ```std::cout << "Hello, World!\n";``` | 642ms |
 
