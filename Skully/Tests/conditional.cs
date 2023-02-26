@@ -4,8 +4,11 @@ class Program
 {
     static void Main()
     {
-        string var1 = "Hello!";
-        var1 = "Nope";
-        Console.WriteLine(var1);
+        int var1 = 0;
+        while(var1 < 10)
+        {
+            Console.WriteLine("YOOOOO");
+            var1 = var1 + 1;
+        }
     }
 }

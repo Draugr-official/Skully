@@ -9,6 +9,7 @@ namespace Skully.Compiler.CodeGen.Objects
 {
     /*
      This is all super cancer, rewrite
+    NOTE: Puts is a lot faster than printf, this should be prioritized when format is not used
      */
 
     internal class Std

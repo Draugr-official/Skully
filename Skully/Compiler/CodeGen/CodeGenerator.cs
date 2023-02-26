@@ -74,10 +74,8 @@ namespace Skully.Compiler.CodeGen
             this.module = LLVM.ModuleCreateWithName(this.Config.Name);
             builder = LLVM.CreateBuilder();
 
-            // Objects.Std standardLibrary = new Objects.Std(this);
-            // standardLibrary.Generate();
-            
-            LoadAndAddLLVMFile("Standard-Library/win64.bc");
+            Objects.Std standardLibrary = new Objects.Std(this);
+            standardLibrary.Generate();
 
             // Generate LLVM
             CompilationUnitSyntax compilationUnit = this.AST.GetCompilationUnitRoot();
@@ -308,6 +306,15 @@ namespace Skully.Compiler.CodeGen
                 case SyntaxKind.EqualsEqualsToken:
                 case SyntaxKind.NotEqualsExpression:
                     {
+                        return GenerateRelationalExpression((BinaryExpressionSyntax)syntaxNode);
+                    }
+
+                case SyntaxKind.AddExpression:
+                case SyntaxKind.SubtractExpression:
+                case SyntaxKind.MultiplyExpression:
+                case SyntaxKind.DivideExpression:
+                case SyntaxKind.ModuloExpression:
+                    {
                         return GenerateBinaryExpression((BinaryExpressionSyntax)syntaxNode);
                     }
 
@@ -323,6 +330,27 @@ namespace Skully.Compiler.CodeGen
             }
 
             throw Debug.Error($"{syntaxNode.Kind()} is not a supported expression", "Create an issue at https://github.com/Draugr-official/Skully if you believe this is wrong");
+        }
+
+        LLVMValueRef GenerateBinaryExpression(BinaryExpressionSyntax binaryExpression)
+        {
+            switch (binaryExpression.Kind())
+            {
+                case SyntaxKind.AddExpression:
+                    {
+                        LLVMValueRef left = GenerateExpression(binaryExpression.Left);
+                        LLVMValueRef right = GenerateExpression(binaryExpression.Right);
+                        return LLVM.BuildAdd(builder, left, right, "");
+                    }
+                case SyntaxKind.SubtractExpression:
+                    {
+                        LLVMValueRef left = GenerateExpression(binaryExpression.Left);
+                        LLVMValueRef right = GenerateExpression(binaryExpression.Right);
+                        return LLVM.BuildSub(builder, left, right, "");
+                    }
+            }
+
+            throw Debug.Error($"{binaryExpression.Kind()} is not a supported binary operation", "Create an issue at https://github.com/Draugr-official/Skully if you believe this is wrong");
         }
 
         LLVMValueRef GenerateAssignmentExpression(AssignmentExpressionSyntax assignmentExpression)
@@ -348,7 +376,7 @@ namespace Skully.Compiler.CodeGen
             return GetVariable(identifierName.Identifier.Text);
         }
 
-        LLVMValueRef GenerateBinaryExpression(BinaryExpressionSyntax binaryExpression)
+        LLVMValueRef GenerateRelationalExpression(BinaryExpressionSyntax binaryExpression)
         {
             switch(binaryExpression.Kind())
             {
@@ -356,14 +384,16 @@ namespace Skully.Compiler.CodeGen
                     {
                         var left = GenerateExpression(binaryExpression.Left);
                         var right = GenerateExpression(binaryExpression.Right);
-                        return LLVM.BuildICmp(builder, LLVMIntPredicate.LLVMIntSGT, left, right, "gt");
+                        Console.WriteLine("RELATIONAL OPERATOR GREATER THAN");
+                        return LLVM.BuildICmp(builder, LLVMIntPredicate.LLVMIntSGT, left, right, "GREATER THAN");
                     }
 
                 case SyntaxKind.LessThanExpression:
                     {
                         var left = GenerateExpression(binaryExpression.Left);
                         var right = GenerateExpression(binaryExpression.Right);
-                        return LLVM.BuildICmp(builder, LLVMIntPredicate.LLVMIntSLT, left, right, "lt");
+                        Console.WriteLine("RELATIONAL OPERATOR LESS THAN");
+                        return LLVM.BuildICmp(builder, LLVMIntPredicate.LLVMIntSLT, left, right, "LESS THAN");
                     }
             }
             throw Debug.Error($"{binaryExpression.Kind()} is not a supported operation", "Create an issue at https://github.com/Draugr-official/Skully if you believe this is wrong");
