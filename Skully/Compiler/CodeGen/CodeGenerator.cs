@@ -17,8 +17,8 @@ namespace Skully.Compiler.CodeGen
         CodeGenConfig Config { get; set; }
         SyntaxTree AST { get; set; }
 
-        public LLVMModuleRef module;
-        public LLVMBuilderRef builder;
+        public LLVMModuleRef Module;
+        public LLVMBuilderRef Builder;
 
         string EntryFile = "";
 
@@ -28,12 +28,12 @@ namespace Skully.Compiler.CodeGen
         {
             this.EntryFile = file;
             this.Config = config;
-            this.module = LLVM.ModuleCreateWithName(config.Name);
+            this.Module = LLVM.ModuleCreateWithName(config.Name);
             this.AST = CSharpSyntaxTree.ParseText(File.ReadAllText(file));
             this.variableTable = new Dictionary<string, LLVMValueRef>();
         }
 
-        public void LoadAndAddLLVMFile(string filePath)
+        public void CreateModuleFromFile(string filePath)
         {
             Debug.Log(File.ReadAllText(filePath));
             // Create a memory buffer from the file contents
@@ -41,21 +41,15 @@ namespace Skully.Compiler.CodeGen
 
             if (string.IsNullOrEmpty(errorMessage))
             {
-                // Parse the bitcode from the memory buffer
-                LLVMContextRef context = LLVM.GetGlobalContext();
-                LLVMModuleRef module = LLVM.ModuleCreateWithName("temp");
-                if (!LLVM.ParseBitcodeInContext(context, memoryBuffer, out module, out errorMessage))
+                LLVMContextRef context = LLVM.ContextCreate();
+                if(LLVM.ParseIRInContext(context, memoryBuffer, out LLVMModuleRef module, out string msg))
                 {
-                    // Link the parsed module with the current module
-                    LLVM.LinkModules2(this.module, module);
+                    this.Module = module;
                 }
                 else
                 {
-                    Debug.Error(errorMessage);
+                    Debug.Error(msg);
                 }
-
-                // Dispose the memory buffer
-                LLVM.DisposeMemoryBuffer(memoryBuffer);
             }
             else
             {
@@ -70,17 +64,20 @@ namespace Skully.Compiler.CodeGen
             LLVM.InitializeX86TargetMC();
             LLVM.InitializeX86AsmPrinter();
 
-            // Assign module and builder
-            this.module = LLVM.ModuleCreateWithName(this.Config.Name);
-            builder = LLVM.CreateBuilder();
+            // Assign Module and Builder
+            this.Module = LLVM.ModuleCreateWithName(this.Config.Name);
+            Builder = LLVM.CreateBuilder();
 
-            Objects.Std standardLibrary = new Objects.Std(this);
-            standardLibrary.Generate();
+            //Objects.Std standardLibrary = new Objects.Std(this);
+            //standardLibrary.Generate();
+
+            CreateModuleFromFile(Environment.CurrentDirectory + "\\Standard-Library\\win64.ll");
 
             // Generate LLVM
             CompilationUnitSyntax compilationUnit = this.AST.GetCompilationUnitRoot();
             GenerateSyntaxNodes(compilationUnit.ChildNodes());
-            
+
+
             if (!MainExists)
             {
                 Debug.Error("You're missing an entry point", "Add a `Main` method to the file", this.EntryFile);
@@ -88,16 +85,16 @@ namespace Skully.Compiler.CodeGen
 
             if (!Debug.HasError)
             {
-                LLVM.DisposeBuilder(builder);
-                LLVM.VerifyModule(module, LLVMVerifierFailureAction.LLVMReturnStatusAction, out var message);
+                LLVM.DisposeBuilder(Builder);
+                LLVM.VerifyModule(Module, LLVMVerifierFailureAction.LLVMReturnStatusAction, out var message);
                 if (!string.IsNullOrEmpty(message))
                 {
-                    LLVM.DumpModule(module);
+                    LLVM.DumpModule(Module);
                     Debug.Error(message);
                 }
                 if (this.Config.Build)
                 {
-                    LLVM.PrintModuleToFile(module, "out.ll", out string ErrorMessage);
+                    LLVM.PrintModuleToFile(Module, "out.ll", out string ErrorMessage);
                     if (!string.IsNullOrEmpty(ErrorMessage))
                     {
                         Debug.Error(ErrorMessage);
@@ -140,22 +137,22 @@ namespace Skully.Compiler.CodeGen
             }
 
             var funcType = LLVM.FunctionType(LLVM.VoidType(), new LLVMTypeRef[] { LLVM.PointerType(LLVM.Int8Type(), 0) }, false);
-            var func = LLVM.AddFunction(module, methodName, funcType);
+            var func = LLVM.AddFunction(Module, methodName, funcType);
             var block = LLVM.AppendBasicBlock(func, "");
-            LLVM.PositionBuilderAtEnd(builder, block);
+            LLVM.PositionBuilderAtEnd(Builder, block);
 
             if(methodDeclaration.Body != null)
             {
                 GenerateSyntaxNodes(methodDeclaration.Body.ChildNodes());
             }
 
-            LLVM.BuildRetVoid(builder);
+            LLVM.BuildRetVoid(Builder);
         }
 
         void GenerateIfStatement(IfStatementSyntax ifStatement)
         {
             LLVMValueRef conditionValue = GenerateExpression(ifStatement.Condition);
-            LLVMValueRef function = LLVM.GetBasicBlockParent(LLVM.GetInsertBlock(builder));
+            LLVMValueRef function = LLVM.GetBasicBlockParent(LLVM.GetInsertBlock(Builder));
 
             LLVMBasicBlockRef thenBB = LLVM.AppendBasicBlock(function, ""); // if-then
             LLVMBasicBlockRef elseBB = LLVM.AppendBasicBlock(function, ""); // if-else
@@ -164,41 +161,41 @@ namespace Skully.Compiler.CodeGen
             if (ifStatement.Else == null)
             {
                 elseBB.DeleteBasicBlock();
-                LLVM.BuildCondBr(builder, conditionValue, thenBB, endBB);
+                LLVM.BuildCondBr(Builder, conditionValue, thenBB, endBB);
             }
             else
             {
-                LLVM.BuildCondBr(builder, conditionValue, thenBB, elseBB);
-                LLVM.PositionBuilderAtEnd(builder, elseBB);
+                LLVM.BuildCondBr(Builder, conditionValue, thenBB, elseBB);
+                LLVM.PositionBuilderAtEnd(Builder, elseBB);
                 GenerateSyntaxNodes(ifStatement.Else.Statement.ChildNodes());
-                LLVM.BuildBr(builder, endBB);
+                LLVM.BuildBr(Builder, endBB);
             }
 
-            LLVM.PositionBuilderAtEnd(builder, thenBB);
+            LLVM.PositionBuilderAtEnd(Builder, thenBB);
             GenerateSyntaxNodes(ifStatement.Statement.ChildNodes());
-            LLVM.BuildBr(builder, endBB);
+            LLVM.BuildBr(Builder, endBB);
 
-            LLVM.PositionBuilderAtEnd(builder, endBB);
+            LLVM.PositionBuilderAtEnd(Builder, endBB);
         }
 
         void GenerateWhileStatement(WhileStatementSyntax whileStatement)
         {
-            var function = LLVM.GetBasicBlockParent(LLVM.GetInsertBlock(builder));
+            var function = LLVM.GetBasicBlockParent(LLVM.GetInsertBlock(Builder));
 
             LLVMBasicBlockRef conditionBB = LLVM.AppendBasicBlock(function, "");
             LLVMBasicBlockRef bodyBB = LLVM.AppendBasicBlock(function, "");
             LLVMBasicBlockRef endBB = LLVM.AppendBasicBlock(function, "");
 
-            LLVM.BuildBr(builder, conditionBB);
-            LLVM.PositionBuilderAtEnd(builder, conditionBB);
+            LLVM.BuildBr(Builder, conditionBB);
+            LLVM.PositionBuilderAtEnd(Builder, conditionBB);
             LLVMValueRef conditionValue = GenerateExpression(whileStatement.Condition);
-            LLVM.BuildCondBr(builder, conditionValue, bodyBB, endBB);
+            LLVM.BuildCondBr(Builder, conditionValue, bodyBB, endBB);
 
-            LLVM.PositionBuilderAtEnd(builder, bodyBB);
+            LLVM.PositionBuilderAtEnd(Builder, bodyBB);
             GenerateSyntaxNodes(whileStatement.Statement.ChildNodes());
-            LLVM.BuildBr(builder, conditionBB);
+            LLVM.BuildBr(Builder, conditionBB);
 
-            LLVM.PositionBuilderAtEnd(builder, endBB);
+            LLVM.PositionBuilderAtEnd(Builder, endBB);
         }
 
         void GenerateDeclarationStatement(LocalDeclarationStatementSyntax localDeclarationStatement)
@@ -340,13 +337,13 @@ namespace Skully.Compiler.CodeGen
                     {
                         LLVMValueRef left = GenerateExpression(binaryExpression.Left);
                         LLVMValueRef right = GenerateExpression(binaryExpression.Right);
-                        return LLVM.BuildAdd(builder, left, right, "");
+                        return LLVM.BuildAdd(Builder, left, right, "");
                     }
                 case SyntaxKind.SubtractExpression:
                     {
                         LLVMValueRef left = GenerateExpression(binaryExpression.Left);
                         LLVMValueRef right = GenerateExpression(binaryExpression.Right);
-                        return LLVM.BuildSub(builder, left, right, "");
+                        return LLVM.BuildSub(Builder, left, right, "");
                     }
             }
 
@@ -385,7 +382,7 @@ namespace Skully.Compiler.CodeGen
                         var left = GenerateExpression(binaryExpression.Left);
                         var right = GenerateExpression(binaryExpression.Right);
                         Console.WriteLine("RELATIONAL OPERATOR GREATER THAN");
-                        return LLVM.BuildICmp(builder, LLVMIntPredicate.LLVMIntSGT, left, right, "GREATER THAN");
+                        return LLVM.BuildICmp(Builder, LLVMIntPredicate.LLVMIntSGT, left, right, "GREATER THAN");
                     }
 
                 case SyntaxKind.LessThanExpression:
@@ -393,7 +390,7 @@ namespace Skully.Compiler.CodeGen
                         var left = GenerateExpression(binaryExpression.Left);
                         var right = GenerateExpression(binaryExpression.Right);
                         Console.WriteLine("RELATIONAL OPERATOR LESS THAN");
-                        return LLVM.BuildICmp(builder, LLVMIntPredicate.LLVMIntSLT, left, right, "LESS THAN");
+                        return LLVM.BuildICmp(Builder, LLVMIntPredicate.LLVMIntSLT, left, right, "LESS THAN");
                     }
             }
             throw Debug.Error($"{binaryExpression.Kind()} is not a supported operation", "Create an issue at https://github.com/Draugr-official/Skully if you believe this is wrong");
@@ -424,7 +421,7 @@ namespace Skully.Compiler.CodeGen
         {
             string literalValue = stringExpression.GetText().ToString();
             literalValue = literalValue.Substring(1, literalValue.Length - 2);
-            var str = LLVM.BuildGlobalString(builder, literalValue, "");
+            var str = LLVM.BuildGlobalString(Builder, literalValue, "");
             return LLVM.ConstGEP(str, new LLVMValueRef[] { LLVM.ConstInt(LLVM.Int32Type(), 0, false), LLVM.ConstInt(LLVM.Int32Type(), 0, false) });
         }
         
@@ -455,12 +452,12 @@ namespace Skully.Compiler.CodeGen
             string invocationName = invocationExpression.Expression.ToString();
 
             var invocationType = LLVM.FunctionType(LLVM.Int32Type(), new LLVMTypeRef[] { LLVM.PointerType(LLVM.Int8Type(), 0) }, true);
-            var invocationFunc = LLVM.GetNamedFunction(module, invocationName).Pointer == IntPtr.Zero ? LLVM.AddFunction(module, invocationName, invocationType) : LLVM.GetNamedFunction(module, invocationName);
+            var invocationFunc = LLVM.GetNamedFunction(Module, invocationName).Pointer == IntPtr.Zero ? LLVM.AddFunction(Module, invocationName, invocationType) : LLVM.GetNamedFunction(Module, invocationName);
 
-            //var str = LLVM.BuildGlobalString(builder, "Hello, world!\n", "");
+            //var str = LLVM.BuildGlobalString(Builder, "Hello, world!\n", "");
             //var format = LLVM.ConstGEP(str, new LLVMValueRef[] { LLVM.ConstInt(LLVM.Int32Type(), 0, false), LLVM.ConstInt(LLVM.Int32Type(), 0, false) });
 
-            var call = LLVM.BuildCall(builder, invocationFunc, ArgumentBuilder(invocationExpression.ArgumentList), "");
+            var call = LLVM.BuildCall(Builder, invocationFunc, ArgumentBuilder(invocationExpression.ArgumentList), "");
             return call;
         }
 
