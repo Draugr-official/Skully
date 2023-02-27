@@ -33,7 +33,7 @@ namespace Skully.Compiler.CodeGen
             this.variableTable = new Dictionary<string, LLVMValueRef>();
         }
 
-        public void CreateModuleFromFile(string filePath)
+        public void ImportFile(string filePath)
         {
             Debug.Log(File.ReadAllText(filePath));
             // Create a memory buffer from the file contents
@@ -68,10 +68,10 @@ namespace Skully.Compiler.CodeGen
             this.Module = LLVM.ModuleCreateWithName(this.Config.Name);
             Builder = LLVM.CreateBuilder();
 
-            //Objects.Std standardLibrary = new Objects.Std(this);
-            //standardLibrary.Generate();
+            Objects.Std standardLibrary = new Objects.Std(this);
+            standardLibrary.Generate();
 
-            CreateModuleFromFile(Environment.CurrentDirectory + "\\Standard-Library\\win64.ll");
+            // ImportFile(Environment.CurrentDirectory + "\\StandardLibrary\\win64.ll");
 
             // Generate LLVM
             CompilationUnitSyntax compilationUnit = this.AST.GetCompilationUnitRoot();
@@ -101,6 +101,9 @@ namespace Skully.Compiler.CodeGen
                     }
                 }
             }
+
+            // LLVM.DisposeBuilder(this.Builder);
+            // LLVM.DisposeModule(this.Module);
         }
 
         private Dictionary<string, LLVMValueRef> variableTable;
@@ -287,6 +290,7 @@ namespace Skully.Compiler.CodeGen
                 case SyntaxKind.NumericLiteralExpression:
                 case SyntaxKind.CharacterLiteralExpression:
                 case SyntaxKind.StringLiteralExpression:
+                case SyntaxKind.NullLiteralExpression:
                     {
                         return GenerateLiteralExpression((LiteralExpressionSyntax)syntaxNode);
                     }
@@ -312,7 +316,7 @@ namespace Skully.Compiler.CodeGen
                 case SyntaxKind.DivideExpression:
                 case SyntaxKind.ModuloExpression:
                     {
-                        return GenerateBinaryExpression((BinaryExpressionSyntax)syntaxNode);
+                        return GenerateArithmeticExpression((BinaryExpressionSyntax)syntaxNode);
                     }
 
                 case SyntaxKind.IdentifierName:
@@ -329,7 +333,7 @@ namespace Skully.Compiler.CodeGen
             throw Debug.Error($"{syntaxNode.Kind()} is not a supported expression", "Create an issue at https://github.com/Draugr-official/Skully if you believe this is wrong");
         }
 
-        LLVMValueRef GenerateBinaryExpression(BinaryExpressionSyntax binaryExpression)
+        LLVMValueRef GenerateArithmeticExpression(BinaryExpressionSyntax binaryExpression)
         {
             switch (binaryExpression.Kind())
             {

@@ -1,7 +1,4 @@
-﻿; ModuleID = 'conditional'
-source_filename = "conditional"
-
-@0 = private unnamed_addr constant [4 x i8] c"%s\0A\00"
+﻿@0 = private unnamed_addr constant [4 x i8] c"%s\0A\00"
 
 define void @Console.WriteLine(i8*, ...) {
 entry:
