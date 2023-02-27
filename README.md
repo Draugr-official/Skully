@@ -23,6 +23,7 @@ All executeables are compiled as their release/most optimized variant.
 Sample size: 50 sets of 100 runs.
 
 ## TODO
+Anything not stated here has not been started.
 * Expressions
   * Literal expressions :white_check_mark:
     - False literal :white_check_mark:
@@ -46,7 +47,7 @@ Sample size: 50 sets of 100 runs.
     - Modulo
   * Invocation expression :white_check_mark:
   * Statement expressions :white_check_mark:
-  * Assignment statement expression :x:
+  * Assignment statement expression (IN PROGRESS)
   
 * Statements
   * Expression statement :white_check_mark:
