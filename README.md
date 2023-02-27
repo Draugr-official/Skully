@@ -21,3 +21,36 @@ All executeables are compiled as their release/most optimized variant.
 | Cpp(gcc) | ```std::cout << "Hello, World!\n";``` | 642ms |
 
 Sample size: 50 sets of 100 runs.
+
+## TODO
+* Expressions
+  * Literal expressions :white_check_mark:
+    - False literal :white_check_mark:
+    - True literal :white_check_mark:
+    - Numeric literal :white_check_mark:
+    - Character literal :white_check_mark:
+    - String literal :white_check_mark:
+    - Null literal expression :white_check_mark:
+  * Relational expressions :white_check_mark:
+    - Greater than :white_check_mark:
+    - Greater than equals :white_check_mark:
+    - Less than :white_check_mark:
+    - Less than equals :white_check_mark:
+    - Equals equals :white_check_mark:
+    - Not equals :white_check_mark:
+  * Arithmetic expression
+    - Add :white_check_mark:
+    - Subtract :white_check_mark:
+    - Multiply
+    - Divide
+    - Modulo
+  * Invocation expression :white_check_mark:
+  * Statement expressions :white_check_mark:
+  * Assignment statement expression :x:
+  
+* Statements
+  * Expression statement :white_check_mark:
+  * If statement (IN PROGRESS)
+  * While statement (IN PROGRESS)
+  * Method declaration statement (IN PROGRESS)
+  * Local declaration statement (IN  PROGRESS)
