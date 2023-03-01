@@ -4,6 +4,7 @@ class Program
 {
     static void Main()
     {
-        printf("Hello, World! %d", 52);
+        Console.WriteLine("Wrote text to file!");
+        File.WriteAllText("hello.txt", "Hello, World! rah.");
     }
 }

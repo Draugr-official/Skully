@@ -9,7 +9,6 @@ namespace Skully
     {
         static void Main(string[] args)
         {
-            args = new string[] { "build", "Tests\\hello-world.cs" };
             CLI.Parse(args);
         }
     }

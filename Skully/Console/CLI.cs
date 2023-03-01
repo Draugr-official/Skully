@@ -30,7 +30,7 @@ namespace Skully
                             ProcessStartInfo clang = new ProcessStartInfo()
                             {
                                 FileName = @"C:\Windows\system32\cmd.exe",
-                                Arguments = $"/c clang out.ll -o {config.Name}.exe",
+                                Arguments = $"/c clang out.ll -Os -o {config.Name}.exe",
                             };
                             Process.Start(clang).WaitForExit();
 

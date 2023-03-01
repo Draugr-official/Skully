@@ -1,6 +1,8 @@
-﻿using System;
+﻿using LLVMSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -81,10 +83,23 @@ namespace Skully
             if (suggestion != "")
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write("suggestion: ");
+                Console.Write("^ : ");
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(suggestion);
             }
+        }
+
+        public static void PrintBuffer(LLVMMemoryBufferRef llvmBuffer)
+        {
+            IntPtr llvmBufferPtr = LLVM.GetBufferStart(llvmBuffer);
+            size_t llvmBufferLength = LLVM.GetBufferSize(llvmBuffer);
+            
+            string built = "";
+            for (IntPtr i = llvmBufferPtr; i.ToInt64() < llvmBufferPtr.ToInt64() + llvmBufferLength; i += 1)
+            {
+                built += (char)Marshal.ReadByte(i);
+            }
+            Debug.Log(built, "FROM MEMORY");
         }
     }
 }

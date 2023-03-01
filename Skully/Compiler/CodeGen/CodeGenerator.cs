@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -19,6 +20,10 @@ namespace Skully.Compiler.CodeGen
 
         public LLVMModuleRef Module;
         public LLVMBuilderRef Builder;
+        
+        List<LLVMModuleRef> Imports = new List<LLVMModuleRef>();
+
+        const int BOM_SIZE = 3;
 
         string EntryFile = "";
 
@@ -35,25 +40,28 @@ namespace Skully.Compiler.CodeGen
 
         public void ImportFile(string filePath)
         {
-            Debug.Log(File.ReadAllText(filePath));
-            // Create a memory buffer from the file contents
-            LLVM.CreateMemoryBufferWithContentsOfFile(filePath, out LLVMMemoryBufferRef memoryBuffer, out string errorMessage);
+            // Debug.Log(File.ReadAllText(filePath));
+            byte[] inputData = File.ReadAllBytes(filePath);
+            IntPtr inputDataPtr = Marshal.AllocHGlobal(inputData.Length);
+            Marshal.Copy(inputData, BOM_SIZE, inputDataPtr, inputData.Length - BOM_SIZE);
 
-            if (string.IsNullOrEmpty(errorMessage))
+            LLVMMemoryBufferRef llvmBuffer = LLVM.CreateMemoryBufferWithMemoryRangeCopy(inputDataPtr, inputData.Length - BOM_SIZE, "buffer");
+            if (LLVM.ParseIRInContext(LLVM.GetModuleContext(this.Module), llvmBuffer, out LLVMModuleRef module, out string parseIRErrorMsg))
             {
-                LLVMContextRef context = LLVM.ContextCreate();
-                if(LLVM.ParseIRInContext(context, memoryBuffer, out LLVMModuleRef module, out string msg))
-                {
-                    this.Module = module;
-                }
-                else
-                {
-                    Debug.Error(msg);
-                }
+                Debug.Error(parseIRErrorMsg, "Error at LLVM.ParseIRInContext");
             }
             else
             {
-                Debug.Error(errorMessage);
+                if (LLVM.VerifyModule(module, LLVMVerifierFailureAction.LLVMReturnStatusAction, out var verifyErrorMsg))
+                {
+                    Debug.Error(verifyErrorMsg, "Error at LLVM.VerifyModule");
+                }
+                else
+                {
+                    LLVM.LinkModules2(this.Module, module);
+                    Imports.Add(module);
+                    // this.Module = module;
+                }
             }
         }
 
@@ -66,19 +74,15 @@ namespace Skully.Compiler.CodeGen
 
             // Assign Module and Builder
             this.Module = LLVM.ModuleCreateWithName(this.Config.Name);
-            Builder = LLVM.CreateBuilder();
+            this.Builder = LLVM.CreateBuilder();
 
-            Objects.Std standardLibrary = new Objects.Std(this);
-            standardLibrary.Generate();
-
-            // ImportFile(Environment.CurrentDirectory + "\\StandardLibrary\\win64.ll");
+            ImportFile(Environment.CurrentDirectory + "\\StandardLibrary\\system.ll");
 
             // Generate LLVM
             CompilationUnitSyntax compilationUnit = this.AST.GetCompilationUnitRoot();
             GenerateSyntaxNodes(compilationUnit.ChildNodes());
-
-
-            if (!MainExists)
+            
+            if (LLVM.GetNamedFunction(this.Module, "main").Pointer == IntPtr.Zero)
             {
                 Debug.Error("You're missing an entry point", "Add a `Main` method to the file", this.EntryFile);
             }
@@ -101,9 +105,6 @@ namespace Skully.Compiler.CodeGen
                     }
                 }
             }
-
-            // LLVM.DisposeBuilder(this.Builder);
-            // LLVM.DisposeModule(this.Module);
         }
 
         private Dictionary<string, LLVMValueRef> variableTable;
