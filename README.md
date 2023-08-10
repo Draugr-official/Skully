@@ -10,6 +10,18 @@
 ## Introduction
 Skully is a user driven compiler dedicated to producing high performance, compact and self-contained software in C#.
 
+# Usage
+Skully utilizes a command line interface to function.
+
+``build (path)``\
+This will compile the .cs file into an executeable. The name of the executeable will be the same as the file.
+
+``test (path)``\
+Tests the code in the specified .cs file and displays any potential issues.
+
+``help``\
+Displays a list of commands.
+
 ## Performance
 > Work in progress
 
