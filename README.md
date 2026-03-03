@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="Skully logo" src="https://media.discordapp.net/attachments/671694363235057675/1067753089328754698/image.png">
+  <img width="433" height="79" alt="Skully logo" src="https://github.com/user-attachments/assets/8c03018b-aabe-4c41-a263-9c67f9e246a6" />
 </p>
 <h1 align="center">The official Skully compiler</h1>
 <p align="center">
